@@ -21,11 +21,11 @@ Ever thought of always keeping your laptop on AC power does to your battery ? We
 
 1. Create a tuya cloud project
 
-   - https://platform.tuya.com/cloud/
+   https://platform.tuya.com/cloud/
 
 2. Connect your device to get the device id
 
-   - https://developer.tuya.com/en/docs/iot/device-control-best-practice-nodejs?id=Kaunfr776vomb
+   https://developer.tuya.com/en/docs/iot/device-control-best-practice-nodejs?id=Kaunfr776vomb
 
 3. Rename `sample.env` to `.env` and Update details in the `.env` file.
 
