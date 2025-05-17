@@ -21,9 +21,17 @@ export function startBatteryCheck(
   if (interval) {
     clearInterval();
   }
+  console.info(
+    "Starting battery check every",
+    intervalMs,
+    "max=",
+    max,
+    "min=",
+    min
+  );
   interval = setInterval(async () => {
     let batteryInfo = await battery();
-    console.info("Battery status", batteryInfo.percent);
+    // console.info("Battery status", batteryInfo.percent);
     if (!batteryInfo.hasBattery && !batteryInfo.acConnected) {
       console.log("Requesting to turn on AC power as no battery present");
       onToggleAc(1);

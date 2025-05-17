@@ -35,11 +35,13 @@ export const createDeviceManager = (deviceId) => {
         path: `/v1.0/iot-03/devices/${device_id}/commands`,
         method: "POST",
         body: {
-          commands: [{ code: "switch_1", value: newValue }],
+          commands: [{ code: "switch_1", value: newValue == 1 }],
         },
       });
       if (!commands.success) {
-        new Error("Error occured while connecting to device. " + commands.msg);
+        throw new Error(
+          "Error occured while connecting to device. " + commands.msg
+        );
       }
       return commands;
     },

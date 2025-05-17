@@ -43,8 +43,8 @@ app.get("/api/set-status", (req, res) => {
 function onToggleAc(value) {
   return deviceMgr
     .setStatus(value)
-    .then(() => {
-      console.info("Success setting AC statusto", value);
+    .then((response) => {
+      console.info("Success setting AC status to", value);
     })
     .catch((e) => {
       console.warn("Error setting AC status", e.message);
@@ -56,18 +56,20 @@ app.get("/", (req, res) => {
     res.send(status);
   });
 });
-
-app.get("/api/auto-manager/start", (req, res) => {
+function initBatteryCheck() {
   let min = process.env.BATTERY_KEEP_MIN || 60;
   let max = process.env.BATTERY_KEEP_MAX || 80;
   let intervalMs = process.env.BATTERY_CHECK_INTERVAL_MS || 10000;
   startBatteryCheck(min, max, onToggleAc, intervalMs);
-  res.send({
+  return {
     message: "Started",
     min,
     max,
     intervalMs,
-  });
+  };
+}
+app.get("/api/auto-manager/start", (req, res) => {
+  res.send(initBatteryCheck());
 });
 
 app.get("/api/auto-manager/stop", (req, res) => {
@@ -80,4 +82,5 @@ app.get("/api/auto-manager/stop", (req, res) => {
 const PORT = process.env.PORT || 8801;
 app.listen(PORT, () => {
   console.log("Device manager started on port", PORT);
+  initBatteryCheck();
 });
