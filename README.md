@@ -88,9 +88,8 @@ https://developer.tuya.com/en/docs/iot/device-control-best-practice-nodejs?id=Ka
 
     **Environment Variables Explained:**
 
-    - `BATTERY_CHECK_INTERVAL_MS`: How often to check the battery status (in milliseconds). Default used in code: `10000`.
-    - `BATTERY_KEEP_MIN`: If the battery percentage drops below this value and AC is not connected, the AC power will be turned ON. `sample.env` suggests `70`. If not set, `index.js` defaults to `60`.
-    - `BATTERY_KEEP_MAX`: If the battery percentage goes above this value and AC is connected, the AC power will be turned OFF. `sample.env` suggests `80`. If not set, `index.js` defaults to `80`.
+    - `BATTERY_KEEP_MIN`: If the battery percentage drops below this value and AC is not connected, the AC power will be turned ON.
+    - `BATTERY_KEEP_MAX`: If the battery percentage goes above this value and AC is connected, the AC power will be turned OFF.
     - `TUYA_ACCESS_KEY`: Your Tuya IoT Platform Access ID/Client ID.
     - `TUYA_SECRET_KEY`: Your Tuya IoT Platform Access Secret/Client Secret.
     - `TUYA_DEVICE_ID`: The Device ID of your Tuya smart plug device (from devices section).
