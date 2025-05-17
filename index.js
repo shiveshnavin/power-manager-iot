@@ -56,10 +56,11 @@ app.get("/", (req, res) => {
     res.send(status);
   });
 });
-function initBatteryCheck() {
-  let min = process.env.BATTERY_KEEP_MIN || 60;
-  let max = process.env.BATTERY_KEEP_MAX || 80;
-  let intervalMs = process.env.BATTERY_CHECK_INTERVAL_MS || 10000;
+function initBatteryCheck(_min, _max, _intervalMs) {
+  let min = _min || process.env.BATTERY_KEEP_MIN || 60;
+  let max = _max || process.env.BATTERY_KEEP_MAX || 80;
+  let intervalMs =
+    _intervalMs || process.env.BATTERY_CHECK_INTERVAL_MS || 10000;
   startBatteryCheck(min, max, onToggleAc, intervalMs);
   return {
     message: "Started",
@@ -69,7 +70,7 @@ function initBatteryCheck() {
   };
 }
 app.get("/api/auto-manager/start", (req, res) => {
-  res.send(initBatteryCheck());
+  res.send(initBatteryCheck(req.query.min, req.query.max, req.query.interval));
 });
 
 app.get("/api/auto-manager/stop", (req, res) => {
