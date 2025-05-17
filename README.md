@@ -20,10 +20,12 @@ A NodeJS app to control tuya based switch for keeping your devices powered up ba
 Ever thought of always keeping your laptop on AC power does to your battery ? Well, nothing good! This simple app is there for rescue. Just install the dependencies and run the app using pm2, connect your charger via a tuya switch and get the device id by creating a cloud project in tuya.
 
 1. Create a tuya cloud project
-   https://platform.tuya.com/cloud/
+
+   - https://platform.tuya.com/cloud/
 
 2. Connect your device to get the device id
-   https://developer.tuya.com/en/docs/iot/device-control-best-practice-nodejs?id=Kaunfr776vomb
+
+   - https://developer.tuya.com/en/docs/iot/device-control-best-practice-nodejs?id=Kaunfr776vomb
 
 3. Rename `sample.env` to `.env` and Update details in the `.env` file.
 
