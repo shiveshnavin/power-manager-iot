@@ -75,7 +75,6 @@ Ever thought of always keeping your laptop on AC power does to your battery ? We
     Then, edit the `.env` file with your specific configurations:
 
     ```properties
-    # Contents from d:\code\node_projects\power-manager-iot\sample.env
     BATTERY_CHECK_INTERVAL_MS=10000
     BATTERY_KEEP_MIN=70
     BATTERY_KEEP_MAX=80
