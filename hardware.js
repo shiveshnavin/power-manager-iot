@@ -39,11 +39,15 @@ export function startBatteryCheck(
         batteryInfo.percent
       );
     if (!batteryInfo.hasBattery && !batteryInfo.acConnected) {
-      console.log("Requesting to turn on AC power as no battery present");
+      console.log(
+        new Date().toLocaleString(),
+        "Requesting to turn on AC power as no battery present"
+      );
       onToggleAc(1);
     } else {
       if (batteryInfo.percent < min && !batteryInfo.acConnected) {
         console.log(
+          new Date().toLocaleString(),
           "Requesting to turn on AC power as  battery percent",
           batteryInfo.percent,
           "is less than",
@@ -52,6 +56,7 @@ export function startBatteryCheck(
         onToggleAc(1);
       } else if (batteryInfo.percent >= max && batteryInfo.acConnected) {
         console.log(
+          new Date().toLocaleString(),
           "Requesting to turn off AC power as  battery percent",
           batteryInfo.percent,
           "is more than",
