@@ -53,12 +53,11 @@ https://developer.tuya.com/en/docs/iot/device-control-best-practice-nodejs?id=Ka
 1.  **Clone the repository:**
 
     ```bash
-    git clone <repository-url>
-    cd <repository-folder-name>
+    git clone https://github.com/shiveshnavin/power-manager-iot
+    cd power-manager-iot
     ```
 
 2.  **Install dependencies:**
-    (Assuming you have a `package.json` file)
 
     ```bash
     npm install
@@ -92,9 +91,9 @@ https://developer.tuya.com/en/docs/iot/device-control-best-practice-nodejs?id=Ka
     - `BATTERY_CHECK_INTERVAL_MS`: How often to check the battery status (in milliseconds). Default used in code: `10000`.
     - `BATTERY_KEEP_MIN`: If the battery percentage drops below this value and AC is not connected, the AC power will be turned ON. `sample.env` suggests `70`. If not set, `index.js` defaults to `60`.
     - `BATTERY_KEEP_MAX`: If the battery percentage goes above this value and AC is connected, the AC power will be turned OFF. `sample.env` suggests `80`. If not set, `index.js` defaults to `80`.
-    - `TUYA_ACCESS_KEY`: Your Tuya IoT Platform Access Key.
-    - `TUYA_SECRET_KEY`: Your Tuya IoT Platform Secret Key.
-    - `TUYA_DEVICE_ID`: The ID of your Tuya smart plug device.
+    - `TUYA_ACCESS_KEY`: Your Tuya IoT Platform Access ID/Client ID.
+    - `TUYA_SECRET_KEY`: Your Tuya IoT Platform Access Secret/Client Secret.
+    - `TUYA_DEVICE_ID`: The Device ID of your Tuya smart plug device (from devices section).
     - `JWT`: A secret token used for authenticating API requests. Choose a strong, random string.
     - `PORT`: The port on which the application server will run. Default: `8801`.
 
@@ -118,7 +117,7 @@ Starting battery check every [intervalMs] max=[max_value] min=[min_value]
 
 ## API Endpoints
 
-All API endpoints under `/api/*` require authentication. Authentication can be provided either via an `Authorization` header or an `access_token` query parameter.
+All API endpoints under `/*` require authentication. Authentication can be provided either via an `Authorization` header or an `access_token` query parameter.
 
 **Authentication Methods:**
 
@@ -135,7 +134,7 @@ Returns the current battery status and the status of the automatic battery check
 
 - **URL:** `/`
 - **Method:** `GET`
-- **Auth Required:** No
+- **Auth Required:** YES
 - **Success Response (200 OK):**
   ```json
   {
@@ -235,42 +234,3 @@ Stops the automatic battery checking. The AC power outlet will remain in its cur
   - `401 Unauthorized`.
 
 ---
-
-## How It Works
-
-1.  **Initialization (`index.js`):**
-
-    - The application starts an Express server.
-    - It initializes a connection to your Tuya device using `iot.js`.
-    - By default, or via an API call, it starts the automatic battery check (`hardware.js`) using parameters from environment variables or defaults.
-
-2.  **Battery Monitoring (`hardware.js`):**
-
-    - The `startBatteryCheck` function sets up a `setInterval` to periodically fetch battery information using the `systeminformation` library.
-    - It compares the current battery percentage (`batteryInfo.percent`) and AC connection status (`batteryInfo.acConnected`) against the configured `min` and `max` thresholds.
-
-3.  **Automatic AC Control Logic (`hardware.js`):**
-
-    - **If no battery is detected and AC is not connected:** It requests to turn ON the AC power.
-    - **If battery percentage < `min` AND AC is NOT connected:** It requests to turn ON the AC power.
-    - **If battery percentage >= `max` AND AC IS connected:** It requests to turn OFF the AC power.
-    - These requests are made by calling the `onToggleAc` callback function (defined in `index.js`).
-
-4.  **Tuya Device Interaction (`iot.js` via `onToggleAc` in `index.js`):**
-    - The `onToggleAc` function in `index.js` receives the desired state (1 for ON, 0 for OFF).
-    - It uses the `deviceMgr.setStatus()` method (from `iot.js`) to send a command to the configured Tuya device (`TUYA_DEVICE_ID`) to change its `switch_1` state.
-
-## Key Dependencies
-
-- Express.js: Web framework for Node.js.
-- body-parser: Node.js body parsing middleware.
-- systeminformation: System hardware/software information library (used for battery status).
-- @tuya/tuya-connector-nodejs: SDK for Tuya Open API.
-- dotenv: Loads environment variables from a `.env` file.
-
-## Potential Improvements & Notes
-
-- **Error Handling in `iot.js`:** The `createDeviceManager` function in `iot.js` fetches device details using `context.device.detail().then(...)`. Consider adding a `.catch(...)` to this promise chain to handle potential errors during device detail fetching.
-- **Input Validation in `/api/set-status` (`index.js`):** The validation logic for the `value` query parameter (`if (value == undefined || value != 1 || value != 0)`) is currently flawed and will incorrectly reject valid inputs (`0` or `1`). It should be corrected (e.g., `if (value === undefined || (value !== '0' && value !== '1'))`).
-- **`clearInterval()` in `hardware.js`:** In `startBatteryCheck`, when an existing interval is cleared, `clearInterval()` is called without an argument. It should be `clearInterval(interval);`.
-- **Default Values Consistency:** The default value for `BATTERY_KEEP_MIN` is `60` in `index.js` if the environment variable is not set, while `sample.env` suggests `70`. Ensure this is the intended behavior or align them. `BATTERY_KEEP_MAX` and `BATTERY_CHECK_INTERVAL_MS` have consistent defaults/suggestions.
