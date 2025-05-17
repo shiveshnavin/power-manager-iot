@@ -32,7 +32,12 @@ export function startBatteryCheck(
   );
   interval = setInterval(async () => {
     let batteryInfo = await battery();
-    if (ic++ % 48 == 0) console.info("Battery status", batteryInfo.percent);
+    if (ic++ % 12 == 0)
+      console.info(
+        new Date().toLocaleString(),
+        "Battery status",
+        batteryInfo.percent
+      );
     if (!batteryInfo.hasBattery && !batteryInfo.acConnected) {
       console.log("Requesting to turn on AC power as no battery present");
       onToggleAc(1);
