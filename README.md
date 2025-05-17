@@ -98,8 +98,6 @@ https://developer.tuya.com/en/docs/iot/device-control-best-practice-nodejs?id=Ka
 
 ## Running the Application
 
-Start the application using (assuming `start` script in `package.json` points to `node index.js`):
-
 ```bash
 npm start
 # or directly
