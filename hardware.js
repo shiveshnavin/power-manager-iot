@@ -36,7 +36,8 @@ export function startBatteryCheck(
       console.info(
         new Date().toLocaleString(),
         "Battery status",
-        batteryInfo.percent
+        batteryInfo.percent,
+        batteryInfo.acConnected ? 'charging':'on-battery'
       );
     if (!batteryInfo.hasBattery && !batteryInfo.acConnected) {
       console.log(
