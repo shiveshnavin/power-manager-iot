@@ -1,18 +1,22 @@
-import { battery } from "systeminformation";
+import { battery, disksIO, mem, networkStats, cpuTemperature, cpuCurrentSpeed } from "systeminformation";
 
 let interval = undefined;
 let ic = 0;
-export function getStatus() {
-  return battery()
-    .then((status) => ({
-      interval: interval != undefined ? "started" : "stopped",
-      ...status,
-    }))
-    .catch((e) => ({
-      interval: interval != undefined ? "started" : "stopped",
-      message: "Unable to read battery info. " + e.message,
-    }));
+export async function getStatus() {
+  let status = {
+    interval: interval != undefined ? "started" : "stopped",
+    battery: await battery(),
+    cpu: {
+      speed: await cpuCurrentSpeed(),
+      temp: await cpuTemperature(),
+    },
+    network: await networkStats(),
+    mem: await mem(),
+    disk: await disksIO()
+  }
+  return status
 }
+
 export function startBatteryCheck(
   min,
   max,
@@ -37,9 +41,9 @@ export function startBatteryCheck(
         new Date().toLocaleString(),
         "Battery status",
         batteryInfo.percent,
-        batteryInfo.acConnected ? 'charging':'on-battery'
+        batteryInfo.acConnected ? 'charging' : 'on-battery'
       );
-      
+
     if (!batteryInfo.hasBattery && !batteryInfo.acConnected) {
       console.log(
         new Date().toLocaleString(),
