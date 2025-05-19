@@ -53,9 +53,157 @@ function onToggleAc(value) {
 
 app.get("/", (req, res) => {
   getStatus().then((status) => {
-    res.send(status);
+    const { battery, cpu, network, mem, disk } = status;
+
+    const html = `
+    <html>
+    <head>
+      <title>Status Overview</title>
+      <style>
+        body {
+          font-family: Arial, sans-serif;
+          margin: 20px;
+          background: #f9f9f9;
+          color: #333;
+        }
+        h1 {
+          text-align: center;
+          margin-bottom: 30px;
+        }
+        section {
+          background: white;
+          border-radius: 8px;
+          padding: 20px;
+          margin-bottom: 20px;
+          box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        }
+        table {
+          width: 100%;
+          border-collapse: collapse;
+          margin-top: 10px;
+        }
+        th, td {
+          border: 1px solid #ddd;
+          padding: 8px;
+          text-align: left;
+        }
+        th {
+          background-color: #f2f2f2;
+          font-weight: bold;
+        }
+        .inline-list td {
+          border: none;
+          padding-left: 5px;
+        }
+        .inline-list th {
+          border: none;
+          padding-left: 5px;
+          background: none;
+          font-weight: normal;
+          color: #555;
+        }
+      </style>
+    </head>
+    <body>
+      <h1>System Status Overview</h1>
+
+      <section>
+        <h2>Battery</h2>
+        <table>
+          <tr><th>Has Battery</th><td>${battery.hasBattery}</td></tr>
+          <tr><th>Cycle Count</th><td>${battery.cycleCount}</td></tr>
+          <tr><th>Charging</th><td>${battery.isCharging}</td></tr>
+          <tr><th>Designed Capacity</th><td>${battery.designedCapacity} ${battery.capacityUnit}</td></tr>
+          <tr><th>Max Capacity</th><td>${battery.maxCapacity} ${battery.capacityUnit}</td></tr>
+          <tr><th>Current Capacity</th><td>${battery.currentCapacity} ${battery.capacityUnit}</td></tr>
+          <tr><th>Voltage</th><td>${battery.voltage} V</td></tr>
+          <tr><th>Percent</th><td>${battery.percent}%</td></tr>
+          <tr><th>Time Remaining</th><td>${battery.timeRemaining} minutes</td></tr>
+          <tr><th>AC Connected</th><td>${battery.acConnected}</td></tr>
+          <tr><th>Type</th><td>${battery.type}</td></tr>
+          <tr><th>Model</th><td>${battery.model}</td></tr>
+          <tr><th>Manufacturer</th><td>${battery.manufacturer}</td></tr>
+          <tr><th>Serial</th><td>${battery.serial}</td></tr>
+        </table>
+      </section>
+
+      <section>
+        <h2>CPU</h2>
+        <table>
+          <tr><th>Speed Min (GHz)</th><td>${cpu.speed.min}</td></tr>
+          <tr><th>Speed Max (GHz)</th><td>${cpu.speed.max}</td></tr>
+          <tr><th>Speed Avg (GHz)</th><td>${cpu.speed.avg}</td></tr>
+          <tr><th>Speed per Core (GHz)</th>
+            <td>${cpu.speed.cores.join(', ')}</td>
+          </tr>
+          <tr><th>Main Temp (°C)</th><td>${cpu.temp.main}</td></tr>
+          <tr><th>Max Temp (°C)</th><td>${cpu.temp.max}</td></tr>
+          <tr><th>Core Temps (°C)</th>
+            <td>${cpu.temp.cores.join(', ')}</td>
+          </tr>
+          <tr><th>Socket Temps (°C)</th>
+            <td>${cpu.temp.socket ? cpu.temp.socket.join(', ') : 'N/A'}</td>
+          </tr>
+          <tr><th>Chipset Temp (°C)</th><td>${cpu.temp.chipset ?? 'N/A'}</td></tr>
+        </table>
+      </section>
+
+      <section>
+        <h2>Network Interfaces</h2>
+        ${network.map(iface => `
+          <h3>${iface.iface} (${iface.operstate})</h3>
+          <table>
+            <tr><th>RX Bytes</th><td>${iface.rx_bytes}</td></tr>
+            <tr><th>RX Dropped</th><td>${iface.rx_dropped}</td></tr>
+            <tr><th>RX Errors</th><td>${iface.rx_errors}</td></tr>
+            <tr><th>TX Bytes</th><td>${iface.tx_bytes}</td></tr>
+            <tr><th>TX Dropped</th><td>${iface.tx_dropped}</td></tr>
+            <tr><th>TX Errors</th><td>${iface.tx_errors}</td></tr>
+          </table>
+        `).join('')}
+      </section>
+
+      <section>
+        <h2>Memory</h2>
+        <table>
+          <tr><th>Total</th><td>${(mem.total / 1024 / 1024).toFixed(2)} MB</td></tr>
+          <tr><th>Free</th><td>${(mem.free / 1024 / 1024).toFixed(2)} MB</td></tr>
+          <tr><th>Used</th><td>${(mem.used / 1024 / 1024).toFixed(2)} MB</td></tr>
+          <tr><th>Active</th><td>${(mem.active / 1024 / 1024).toFixed(2)} MB</td></tr>
+          <tr><th>Available</th><td>${(mem.available / 1024 / 1024).toFixed(2)} MB</td></tr>
+          <tr><th>Buffers</th><td>${(mem.buffers / 1024 / 1024).toFixed(2)} MB</td></tr>
+          <tr><th>Cached</th><td>${(mem.cached / 1024 / 1024).toFixed(2)} MB</td></tr>
+          <tr><th>Slab</th><td>${(mem.slab / 1024 / 1024).toFixed(2)} MB</td></tr>
+          <tr><th>BuffCache</th><td>${(mem.buffcache / 1024 / 1024).toFixed(2)} MB</td></tr>
+          <tr><th>Swap Total</th><td>${(mem.swaptotal / 1024 / 1024).toFixed(2)} MB</td></tr>
+          <tr><th>Swap Used</th><td>${(mem.swapused / 1024 / 1024).toFixed(2)} MB</td></tr>
+          <tr><th>Swap Free</th><td>${(mem.swapfree / 1024 / 1024).toFixed(2)} MB</td></tr>
+          <tr><th>Writeback</th><td>${mem.writeback}</td></tr>
+          <tr><th>Dirty</th><td>${mem.dirty}</td></tr>
+        </table>
+      </section>
+
+      <section>
+        <h2>Disk IO</h2>
+        <table>
+          <tr><th>Read IO</th><td>${disk.rIO}</td></tr>
+          <tr><th>Write IO</th><td>${disk.wIO}</td></tr>
+          <tr><th>Total IO</th><td>${disk.tIO}</td></tr>
+          <tr><th>Read Wait Time (ms)</th><td>${disk.rWaitTime}</td></tr>
+          <tr><th>Write Wait Time (ms)</th><td>${disk.wWaitTime}</td></tr>
+          <tr><th>Total Wait Time (ms)</th><td>${disk.tWaitTime}</td></tr>
+        </table>
+      </section>
+
+    </body>
+    </html>
+    `;
+
+    res.send(html);
   });
 });
+
+
 function initBatteryCheck(_min, _max, _intervalMs) {
   let min = _min || process.env.BATTERY_KEEP_MIN || 60;
   let max = _max || process.env.BATTERY_KEEP_MAX || 80;
@@ -77,6 +225,13 @@ app.get("/api/auto-manager/stop", (req, res) => {
   stopBatteryCheck();
   res.send({
     message: "Stopped",
+  });
+});
+
+
+app.get("/api", (req, res) => {
+  getStatus().then((status) => {
+    res.send(status);
   });
 });
 
