@@ -21,7 +21,7 @@ const deviceMgr = createDeviceManager(process.env.TUYA_DEVICE_ID);
 
 app.get("/api/set-status", (req, res) => {
   let value = req.query.value;
-  if (value == undefined || value != '1' || value != '0') {
+  if (value == undefined || value != '1' && value != '0') {
     return res.status(400).send({
       message: "Missing or Incorrect `value` 1 | 0 in query params",
     });
