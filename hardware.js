@@ -1,4 +1,5 @@
 import { battery, disksIO, mem, networkStats, cpuTemperature, cpuCurrentSpeed } from "systeminformation";
+import fs from 'fs'
 
 let interval = undefined;
 let ic = 0;
@@ -26,6 +27,7 @@ export function startBatteryCheck(
   if (interval) {
     clearInterval();
   }
+  let sentCriticalAlert = false;
   console.info(
     "Starting battery check every",
     intervalMs,
@@ -43,7 +45,21 @@ export function startBatteryCheck(
         batteryInfo.percent,
         batteryInfo.acConnected ? 'charging' : 'on-battery'
       );
-
+    if (batteryInfo.percent < (process.env.BATTERY_CRITICAL || 20)) {
+      if (fs.existsSync('notify.sh') && !sentCriticalAlert) {
+        sentCriticalAlert = true
+        require('child_process').execFile('notify.sh', [batteryInfo.percent.toString()], (err, stdout, stderr) => {
+          if (err) {
+            console.error(new Date().toLocaleString(), 'Error executing notify.sh:', err);
+          } else {
+            console.info(new Date().toLocaleString(), 'notify.sh output:', stdout);
+          }
+        });
+      }
+    }
+    else {
+      sentCriticalAlert = false
+    }
     if (!batteryInfo.hasBattery && !batteryInfo.acConnected) {
       console.log(
         new Date().toLocaleString(),
