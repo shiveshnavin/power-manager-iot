@@ -23,16 +23,16 @@ export const createDeviceManager = (deviceId) => {
     version: '3.3'
   });
   deviceLocal.addListener('error', (e) => {
-    console.error('Local tuya device error', e.message)
+    console.log(new Date().toLocaleString(), 'E: Local tuya device error', e.message)
   })
   deviceLocal.find().then(ldev => {
     return deviceLocal.connect().then(async (lstat) => {
-      console.log('Local device', lstat ? 'connected' : 'not connected')
+      console.log(new Date().toLocaleString(), 'Local device', lstat ? 'connected' : 'not connected')
       let status = await deviceLocal.get();
-      console.log('Local device Current status:', status);
+      console.log(new Date().toLocaleString(), 'Local device Current status:', status);
     });
   }).catch(e => {
-    console.error('Local tuya device', device_id, 'connect error on configured ip', process.env.TUYA_DEVICE_IP)
+    console.error(new Date().toLocaleString(), 'Local tuya device', device_id, 'connect error on configured ip', process.env.TUYA_DEVICE_IP)
   })
   let devicedetail;
   context.device
@@ -42,9 +42,10 @@ export const createDeviceManager = (deviceId) => {
     .then((r) => {
       devicedetail = r;
       if (!r.success) {
-        console.warn("Unable to find device " + device_id);
+        console.log(new Date().toLocaleString(), "W: Unable to find device " + device_id);
       } else {
         console.log(
+          new Date().toLocaleString(),
           "Device:",
           r.result?.name + " " + r.result?.product_name,
           r.result?.online ? "online" : "offline"
@@ -55,34 +56,31 @@ export const createDeviceManager = (deviceId) => {
   return {
     async setStatus(newValue) {
 
-      deviceLocal.set({ set: newValue == 1 }).then(d => {
-        console.log('Local device update status success. New Value=' + newValue == 1);
-      }).catch(e => {
-        console.warn('Local device update status error.', e.message);
-      })
+      return deviceLocal.set({ set: newValue == 1 }).then(d => {
+        console.log(new Date().toLocaleString(), 'Local device update status success. New Value=', newValue == 1);
+      }).catch(async (e) => {
+        console.log(new Date().toLocaleString(), 'W: Local device update status error.', e.message);
 
-      const commands = await context.request({
-        path: `/v1.0/iot-03/devices/${device_id}/commands`,
-        method: "POST",
-        body: {
-          commands: [{ code: "switch_1", value: newValue == 1 }],
-        },
-      }).catch(e => {
-        console.log('Error calling tuya api', e.message)
-        return {
-          success: false,
-          msg: 'Error calling tuya api ' + e.message
+        const commands = await context.request({
+          path: `/v1.0/iot-03/devices/${device_id}/commands`,
+          method: "POST",
+          body: {
+            commands: [{ code: "switch_1", value: newValue == 1 }],
+          },
+        }).catch(e => {
+          console.log(new Date().toLocaleString(), 'E: Error calling tuya api', e.message)
+          return {
+            success: false,
+            msg: 'Error calling tuya api ' + e.message
+          }
+        });
+        if (!commands.success) {
+          throw new Error(
+            "Error occured while connecting to device. " + commands.msg
+          );
         }
-      });
-      if (!commands.success) {
-        throw new Error(
-          "Error occured while connecting to device. " + commands.msg
-        );
-      }
-      return commands;
+        return commands;
+      })
     },
   };
 };
-
-
-createDeviceManager(process.env.TUYA_DEVICE_ID).setStatus(true)
