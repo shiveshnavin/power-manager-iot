@@ -1,10 +1,11 @@
-import { battery, disksIO, mem, networkStats, cpuTemperature, cpuCurrentSpeed } from "systeminformation";
+import SysInfo, { battery, disksIO, mem, networkStats, cpuTemperature, cpuCurrentSpeed } from "systeminformation";
 import fs from 'fs'
 import child_process from 'child_process'
 import path from "path";
 
 let interval = undefined;
-let ic = 0;
+let checkLogCounter = 0;
+let CHECK_CUNTER_INTERVAL = parseInt(process.env.BATTERY_LOG_INTERVAL || `12`)
 export async function getStatus() {
   let status = {
     interval: interval != undefined ? "started" : "stopped",
@@ -24,7 +25,7 @@ export function startBatteryCheck(
   min,
   max,
   onToggleAc,
-  intervalMs = process.env.BATTERY_CHECK_INTERVAL_MS || 10000
+  intervalMs = parseInt(process.env.BATTERY_CHECK_INTERVAL_MS) || 10000
 ) {
   if (interval) {
     clearInterval();
@@ -40,12 +41,15 @@ export function startBatteryCheck(
   );
   interval = setInterval(async () => {
     let batteryInfo = await battery();
-    if (ic++ % 12 == 0)
+    let cpuInfo = await SysInfo.currentLoad()
+    let cpuTemp = await SysInfo.cpuTemperature()
+    let ramInfo = await SysInfo.mem()
+    if ((CHECK_CUNTER_INTERVAL == 1) || (checkLogCounter++ % (CHECK_CUNTER_INTERVAL) == 0))
       console.info(
         new Date().toLocaleString(),
-        "Battery status",
-        batteryInfo.percent,
-        batteryInfo.acConnected ? 'charging' : 'on-battery'
+        "Battery", "[", `status=${batteryInfo.percent} %`, `ac=${batteryInfo.acConnected ? 'charging' : 'on-battery'}`, "]",
+        "CPU", "[", `avg_load=${(cpuInfo.avgLoad || 0.0).toFixed(2)} Ghz`, `cur_load=${cpuInfo.currentLoad.toFixed(2)} %`, `temp=${cpuTemp.main.toFixed(2)} C`, "]",
+        "RAM", "[", `used=${Utils.toGb(ramInfo.active || 0)} GB`, `total=${Utils.toGb(ramInfo.total || 1)} GB`, "]"
       );
     if (batteryInfo.percent < (process.env.BATTERY_CRITICAL || 20)) {
       if (fs.existsSync('notify.sh') && !sentCriticalAlert) {
@@ -95,4 +99,11 @@ export function startBatteryCheck(
 export function stopBatteryCheck() {
   clearInterval(interval);
   interval = undefined;
+}
+
+
+export const Utils = {
+  toGb: (bytes) => {
+    return (bytes / (1024 * 1024 * 1024)).toFixed(2)
+  }
 }
