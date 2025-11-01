@@ -48,7 +48,7 @@ export function startBatteryCheck(
       console.info(
         new Date().toLocaleString(),
         "Battery", "[", `status=${batteryInfo.percent} %`, `ac=${batteryInfo.acConnected ? 'charging' : 'on-battery'}`, "]",
-        "CPU", "[", `avg_load=${(cpuInfo.avgLoad || 0.0).toFixed(2)} Ghz`, `cur_load=${cpuInfo.currentLoad.toFixed(2)} %`, `temp=${cpuTemp.main.toFixed(2)} C`, "]",
+        "CPU", "[", `avg_freq=${(cpuInfo.avgLoad || 0.0).toFixed(2)} Ghz`, `cur_load=${cpuInfo.currentLoad.toFixed(2)} %`, `temp=${cpuTemp.main.toFixed(2)} C`, "]",
         "RAM", "[", `used=${Utils.toGb(ramInfo.active || 0)} GB`, `total=${Utils.toGb(ramInfo.total || 1)} GB`, "]"
       );
     if (batteryInfo.percent < (process.env.BATTERY_CRITICAL || 20)) {
