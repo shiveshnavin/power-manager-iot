@@ -40,11 +40,14 @@ export function startBatteryCheck(
     min
   );
   interval = setInterval(async () => {
-    let batteryInfo = await battery();
-    let cpuInfo = await SysInfo.currentLoad()
-    let cpuTemp = await SysInfo.cpuTemperature()
-    let ramInfo = await SysInfo.mem()
-    let cpuSpeed = await cpuCurrentSpeed()
+    const [cpuSpeed, batteryInfo, cpuInfo, cpuTemp, ramInfo] = await Promise.all([
+      SysInfo.cpuCurrentSpeed(),
+      SysInfo.battery(),
+      SysInfo.currentLoad(),
+      SysInfo.cpuTemperature(),
+      SysInfo.mem()
+    ]);
+
     if ((CHECK_CUNTER_INTERVAL == 1) || (checkLogCounter++ % (CHECK_CUNTER_INTERVAL) == 0))
       console.info(
         new Date().toLocaleString(),
