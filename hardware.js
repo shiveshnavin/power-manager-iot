@@ -47,7 +47,7 @@ export function startBatteryCheck(
     if ((CHECK_CUNTER_INTERVAL == 1) || (checkLogCounter++ % (CHECK_CUNTER_INTERVAL) == 0))
       console.info(
         new Date().toLocaleString(),
-        "Battery", "[", `status=${batteryInfo.percent} %`, `ac=${batteryInfo.acConnected ? 'charging' : 'on-battery'}`, "]",
+        "Battery", "[", `power=${batteryInfo.percent} %`, `status=${batteryInfo.acConnected ? 'charging' : 'on-battery'}`, "]",
         "CPU", "[", `avg_freq=${(cpuInfo.avgLoad || 0.0).toFixed(2)} Ghz`, `cur_load=${cpuInfo.currentLoad.toFixed(2)} %`, `temp=${cpuTemp.main.toFixed(2)} C`, "]",
         "RAM", "[", `used=${Utils.toGb(ramInfo.active || 0)} GB`, `total=${Utils.toGb(ramInfo.total || 1)} GB`, "]"
       );
