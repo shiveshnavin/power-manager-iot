@@ -3,6 +3,10 @@ import bodyParser from "body-parser";
 import { createDeviceManager } from "./iot.js";
 import { getStatus, startBatteryCheck, stopBatteryCheck } from "./hardware.js";
 
+process.on("unhandledRejection", (reason, promise) => {
+  console.error(new Date().toLocaleString(), "Unhandled Promise Rejection:", reason.message);
+});
+
 const app = express();
 app.use(bodyParser.json());
 
