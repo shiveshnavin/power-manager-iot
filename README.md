@@ -2,7 +2,7 @@
 
 A NodeJS app to control tuya based switch for keeping your devices powered up based on battery percentage and remote control.
 
-<img width="1024" height="1024" alt="image" src="https://github.com/user-attachments/assets/5b9aacd1-9d62-4c58-a6c3-05449f8a01c9" />
+<img width="512"  alt="image" src="https://github.com/user-attachments/assets/5b9aacd1-9d62-4c58-a6c3-05449f8a01c9" />
 
 ## Features
 
