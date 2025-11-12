@@ -55,7 +55,7 @@ export function startBatteryCheck(
         "CPU", "[", `avg_freq=${(cpuSpeed.avg || 0.0).toFixed(2)} Ghz`, `cur_load=${cpuInfo.currentLoad.toFixed(2)} %`, `temp=${cpuTemp.main.toFixed(2)} C`, "]",
         "RAM", "[", `used=${Utils.toGb(ramInfo.active || 0)} GB`, `total=${Utils.toGb(ramInfo.total || 1)} GB`, "]"
       );
-    if (batteryInfo.percent < (process.env.BATTERY_CRITICAL || 20)) {
+    if (Number(batteryInfo.percent) < (process.env.BATTERY_CRITICAL || 20)) {
       if (fs.existsSync('notify.sh') && !sentCriticalAlert) {
         sentCriticalAlert = true
         child_process.exec('sh ./notify.sh', [batteryInfo.percent.toString()], (err, stdout, stderr) => {
@@ -77,7 +77,7 @@ export function startBatteryCheck(
       );
       onToggleAc(1);
     } else {
-      if (batteryInfo.percent < min && !batteryInfo.acConnected) {
+      if (Number(batteryInfo.percent) < min && !batteryInfo.acConnected) {
         console.log(
           new Date().toLocaleString(),
           "Requesting to turn on AC power as  battery percent",
@@ -86,7 +86,7 @@ export function startBatteryCheck(
           min
         );
         onToggleAc(1);
-      } else if (batteryInfo.percent >= max && batteryInfo.acConnected) {
+      } else if (Number(batteryInfo.percent) >= max && batteryInfo.acConnected) {
         console.log(
           new Date().toLocaleString(),
           "Requesting to turn off AC power as  battery percent",
