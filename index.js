@@ -106,10 +106,123 @@ app.get("/", (req, res) => {
           font-weight: normal;
           color: #555;
         }
+        .power-controls {
+          display: flex;
+          justify-content: center;
+          gap: 20px;
+          margin-bottom: 20px;
+        }
+        .power-btn {
+          padding: 15px 40px;
+          font-size: 18px;
+          border: none;
+          border-radius: 8px;
+          cursor: pointer;
+          font-weight: bold;
+          transition: background-color 0.3s;
+        }
+        .power-btn.on {
+          background-color: #4CAF50;
+          color: white;
+        }
+        .power-btn.on:hover {
+          background-color: #45a049;
+        }
+        .power-btn.off {
+          background-color: #f44336;
+          color: white;
+        }
+        .power-btn.off:hover {
+          background-color: #da190b;
+        }
+        .power-btn:disabled {
+          background-color: #cccccc;
+          cursor: not-allowed;
+        }
+        #status-message {
+          text-align: center;
+          margin-bottom: 10px;
+          padding: 10px;
+          border-radius: 4px;
+          display: none;
+        }
+        #status-message.success {
+          background-color: #dff0d8;
+          color: #3c763d;
+          display: block;
+        }
+        #status-message.error {
+          background-color: #f2dede;
+          color: #a94442;
+          display: block;
+        }
+        #status-message.processing {
+          background-color: #d9edf7;
+          color: #31708f;
+          display: block;
+        }
       </style>
     </head>
     <body>
       <h1>System Status Overview</h1>
+
+      <section>
+        <h2>Power Control</h2>
+        <div id="status-message"></div>
+        <div class="power-controls">
+          <button class="power-btn on" onclick="setPower(1)">Turn ON</button>
+          <button class="power-btn off" onclick="setPower(0)">Turn OFF</button>
+        </div>
+      </section>
+
+      <script>
+        function getAccessToken() {
+          const params = new URLSearchParams(window.location.search);
+          return params.get('access_token');
+        }
+
+        function setPower(value) {
+          const token = getAccessToken();
+          const statusEl = document.getElementById('status-message');
+          
+          if (!token) {
+            statusEl.textContent = 'Error: No access token found in URL';
+            statusEl.className = 'error';
+            return;
+          }
+
+          const buttons = document.querySelectorAll('.power-btn');
+          buttons.forEach(btn => btn.disabled = true);
+          statusEl.textContent = 'Processing...';
+          statusEl.className = 'processing';
+
+          fetch('/api/set-status?value=' + value + '&access_token=' + encodeURIComponent(token))
+            .then(response => {
+              if (!response.ok) {
+                return response.json().then(data => {
+                  throw new Error(data.message || 'Request failed with status ' + response.status);
+                });
+              }
+              return response.json();
+            })
+            .then(data => {
+              if (data.message === 'Success') {
+                statusEl.textContent = 'Power ' + (value === 1 ? 'ON' : 'OFF') + ' command sent successfully!';
+                statusEl.className = 'success';
+              } else {
+                statusEl.textContent = 'Error: ' + (data.message || 'Unknown error');
+                statusEl.className = 'error';
+              }
+            })
+            .catch(error => {
+              statusEl.textContent = 'Error: ' + error.message;
+              statusEl.className = 'error';
+            })
+            .finally(() => {
+              buttons.forEach(btn => btn.disabled = false);
+            });
+        }
+      </script>
 
       <section>
         <h2>Battery</h2>
