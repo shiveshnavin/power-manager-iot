@@ -39,6 +39,7 @@ export function startBatteryCheck(
     "min=",
     min
   );
+  let previousBatteryPercent = 100;
   interval = setInterval(async () => {
     const [cpuSpeed, batteryInfo, cpuInfo, cpuTemp, ramInfo] = await Promise.all([
       SysInfo.cpuCurrentSpeed(),
@@ -55,21 +56,30 @@ export function startBatteryCheck(
         "CPU", "[", `avg_freq=${(cpuSpeed.avg || 0.0).toFixed(2)} Ghz`, `cur_load=${cpuInfo.currentLoad.toFixed(2)} %`, `temp=${cpuTemp.main.toFixed(2)} C`, "]",
         "RAM", "[", `used=${Utils.toGb(ramInfo.active || 0)} GB`, `total=${Utils.toGb(ramInfo.total || 1)} GB`, "]"
       );
-    if (Number(batteryInfo.percent) < (process.env.BATTERY_CRITICAL || 20)) {
-      if (fs.existsSync('notify.sh') && !sentCriticalAlert) {
-        sentCriticalAlert = true
-        child_process.exec('sh ./notify.sh', [batteryInfo.percent.toString()], (err, stdout, stderr) => {
-          if (err) {
-            console.error(new Date().toLocaleString(), 'Error executing Send critical battery alert:', err);
-          } else {
-            console.info(new Date().toLocaleString(), 'Sent critical battery alert:', stdout);
-          }
-        });
+    if (!isNaN(batteryInfo.percent) && Number(batteryInfo.percent) > 0 && Number(batteryInfo.percent) < (process.env.BATTERY_CRITICAL || 20)) {
+      console.info(
+        new Date().toLocaleString(),
+        "Battery", "[", `power=${batteryInfo.percent} %`, `status=${batteryInfo.acConnected ? 'charging' : 'on-battery'}`, "]",
+        "CPU", "[", `avg_freq=${(cpuSpeed.avg || 0.0).toFixed(2)} Ghz`, `cur_load=${cpuInfo.currentLoad.toFixed(2)} %`, `temp=${cpuTemp.main.toFixed(2)} C`, "]",
+        "RAM", "[", `used=${Utils.toGb(ramInfo.active || 0)} GB`, `total=${Utils.toGb(ramInfo.total || 1)} GB`, "]"
+      );
+      if (previousBatteryPercent <= (process.env.BATTERY_CRITICAL || 20)) {
+        if (fs.existsSync('notify.sh') && !sentCriticalAlert) {
+          sentCriticalAlert = true
+          child_process.exec('sh ./notify.sh', [batteryInfo.percent.toString()], (err, stdout, stderr) => {
+            if (err) {
+              console.error(new Date().toLocaleString(), 'Error executing Send critical battery alert:', err);
+            } else {
+              console.info(new Date().toLocaleString(), 'Sent critical battery alert:', batteryInfo.percent, stdout);
+            }
+          });
+        }
       }
     }
     else {
       sentCriticalAlert = false
     }
+    previousBatteryPercent = Number(batteryInfo.percent);
     if (!batteryInfo.hasBattery && !batteryInfo.acConnected) {
       console.log(
         new Date().toLocaleString(),
