@@ -56,7 +56,7 @@ export function startBatteryCheck(
         "CPU", "[", `avg_freq=${(cpuSpeed.avg || 0.0).toFixed(2)} Ghz`, `cur_load=${cpuInfo.currentLoad.toFixed(2)} %`, `temp=${cpuTemp.main.toFixed(2)} C`, "]",
         "RAM", "[", `used=${Utils.toGb(ramInfo.active || 0)} GB`, `total=${Utils.toGb(ramInfo.total || 1)} GB`, "]"
       );
-    if (!isNaN(batteryInfo.percent) && Number(batteryInfo.percent) > 0 && Number(batteryInfo.percent) < (process.env.BATTERY_CRITICAL || 20)) {
+    if (!isNaN(batteryInfo.percent) && parseInt("" + batteryInfo.percent) > 0 && parseInt("" + batteryInfo.percent) < (process.env.BATTERY_CRITICAL || 20)) {
       console.info(
         new Date().toLocaleString(),
         "Battery", "[", `power=${batteryInfo.percent} %`, `status=${batteryInfo.acConnected ? 'charging' : 'on-battery'}`, "]",
@@ -79,7 +79,7 @@ export function startBatteryCheck(
     else {
       sentCriticalAlert = false
     }
-    previousBatteryPercent = Number(batteryInfo.percent);
+    previousBatteryPercent = parseInt("" + batteryInfo.percent);
     if (!batteryInfo.hasBattery && !batteryInfo.acConnected) {
       console.log(
         new Date().toLocaleString(),
@@ -87,7 +87,7 @@ export function startBatteryCheck(
       );
       onToggleAc(1);
     } else {
-      if (Number(batteryInfo.percent) < min && !batteryInfo.acConnected) {
+      if (parseInt("" + batteryInfo.percent) < min && !batteryInfo.acConnected) {
         console.log(
           new Date().toLocaleString(),
           "Requesting to turn on AC power as  battery percent",
@@ -96,7 +96,7 @@ export function startBatteryCheck(
           min
         );
         onToggleAc(1);
-      } else if (Number(batteryInfo.percent) >= max && batteryInfo.acConnected) {
+      } else if (parseInt("" + batteryInfo.percent) >= max && batteryInfo.acConnected) {
         console.log(
           new Date().toLocaleString(),
           "Requesting to turn off AC power as  battery percent",
