@@ -1,6 +1,7 @@
 import express from "express";
 import bodyParser from "body-parser";
 import { createDeviceManager } from "./iot.js";
+import { createTapoManager } from "./tapo.js";
 import { getStatus, startBatteryCheck, stopBatteryCheck } from "./hardware.js";
 
 process.on("unhandledRejection", (reason, promise) => {
@@ -22,6 +23,42 @@ app.use((req, res, next) => {
 });
 
 const deviceMgr = createDeviceManager(process.env.TUYA_DEVICE_ID);
+const tapoMgr = createTapoManager();
+
+app.get("/api/tapo/status", (req, res) => {
+  tapoMgr
+    .getStatus()
+    .then((status) => {
+      res.send(status);
+    })
+    .catch((e) => {
+      res.status(500).send({
+        message: e.message,
+      });
+    });
+});
+
+app.get("/api/tapo/set-status", (req, res) => {
+  let value = req.query.value;
+  if (value == undefined || (value != "1" && value != "0")) {
+    return res.status(400).send({
+      message: "Missing or Incorrect `value` 1 | 0 in query params",
+    });
+  }
+
+  tapoMgr
+    .setStatus(value)
+    .then(() => {
+      res.send({
+        message: "Success",
+      });
+    })
+    .catch((e) => {
+      res.status(500).send({
+        message: e.message,
+      });
+    });
+});
 
 app.get("/api/set-status", (req, res) => {
   let value = req.query.value;
